@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+require "yaml"
+require "slack"
+require "dotenv"
+
+def format_text(users, text)
+  result = text
+  mt = /(<@(\w+)[|\w+]*>)/.match(text)
+  return text if mt.nil?
+
+  Hash[*mt.captures].each do |repl, uid|
+    result.gsub!(repl, "@#{users[uid]}")
+  end if mt.captures.any?
+  result
+end
+
+def usage(message = nil)
+  puts "Error: #{message}" if message
+  puts
+  puts "Usage: ./bin/slack-channel ombulabs"
+  exit
+end
+
+Dotenv.load!
+client = Slack::Client.new token: ENV["SLACK_API_TOKEN"]
+channel = ARGV.first || ENV["CHANNEL"]
+
+if channel.to_s.empty?
+  usage("No channel specified!")
+else
+  channel = channel.gsub('#','').strip
+end
+
+puts "Getting users list... "
+users = Hash[client.users_list["members"].map{|m| [m["id"], m["name"]]}]
+puts "Getting last messages... "
+
+puts "Getting messages for #{channel}"
+
+channels = client.channels_list["channels"]
+channels.each do |c|
+  next if c['name'] != channel
+  response = client.channels_history(channel: c['id'], count: 1000)
+  messages = response["messages"]
+  messages.reverse.each do |msg|
+    user_name = users[msg["user"]]
+    text = msg["text"].inspect
+    text = format_text(users, text)
+    timestamp = Time.at msg['ts'].to_f
+    puts "#{timestamp.strftime("%Y-%m-%d %H:%M")} - @#{user_name}: #{text}"
+  end
+end
+
+puts "Done!"
