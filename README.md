@@ -10,7 +10,7 @@ In order to get your Slack token, you can go here: [https://api.slack.com/docs/o
 
 ## Usage
 
-    ./bin/slack-channel #gifs
+    ./bin/slack-channel ombulabs
 
     2016-11-10 09:26 - @etagwerker: "@mauro-oto vos tenías un código en ruby que leía mensajes de <#C02BW1AB7|general> para la app de :pingpong: no?"
     2016-11-10 09:27 - @mauro-oto: "@etagwerker si"
@@ -22,8 +22,7 @@ In order to get your Slack token, you can go here: [https://api.slack.com/docs/o
     2016-11-10 09:48 - @mauro-oto: "ah, hmm, no me acuerdo de donde lo encontraba, parece que cambio un poco, fijate si te sirve esta: <https://api.slack.com/docs/oauth-test-tokens>"
     2016-11-10 10:15 - @etagwerker: "ah, copado, está bueno que tienen el concepto de \"test tokens\""
     Done!
-    etagwerker:slack-channel/ (master✗) $ ./bin/slack-channel ombulabs
 
 ## Contributions
 
-We are open to contributions! 
+We are open to contributions!
