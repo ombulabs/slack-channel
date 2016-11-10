@@ -8,6 +8,10 @@ Before you can call this you must add your Slack token to the `.env` file
 
 In order to get your Slack token, you can go here: [https://api.slack.com/docs/oauth-test-tokens](https://api.slack.com/docs/oauth-test-tokens)
 
+    git clone git@github.com:ombulabs/slack-channel.git
+    cd slack-channel
+    bundle
+
 ## Usage
 
     ./bin/slack-channel ombulabs
