@@ -22,34 +22,50 @@ def usage(message = nil)
   exit
 end
 
-Dotenv.load!
-client = Slack::Client.new token: ENV["SLACK_API_TOKEN"]
-channel = ARGV.first || ENV["CHANNEL"]
-
-if channel.to_s.empty?
-  usage("No channel specified!")
-else
-  channel = channel.gsub('#','').strip
+def load_users_hash(client)
+  members = client.users_list["members"].map do |m|
+    [m["id"], m["name"]]
+  end
+  Hash[members]
 end
 
+def load_channel
+  result = ARGV.first || ENV["CHANNEL"]
+
+  if result.to_s.empty?
+    usage("No channel specified!")
+  else
+    result = result.gsub('#','').strip
+  end
+
+  result
+end
+
+def tail_channel(client, users, channel)
+  channels = client.channels_list["channels"]
+  channels.each do |c|
+    next if c['name'] != channel
+    response = client.channels_history(channel: c['id'], count: 1000)
+    messages = response["messages"]
+    messages.reverse.each do |msg|
+      user_name = users[msg["user"]]
+      text = msg["text"].inspect
+      text = format_text(users, text)
+      timestamp = Time.at msg['ts'].to_f
+      puts "#{timestamp.strftime("%Y-%m-%d %H:%M")} - @#{user_name}: #{text}"
+    end
+  end
+end
+
+Dotenv.load!
+client = Slack::Client.new token: ENV["SLACK_API_TOKEN"]
+channel = load_channel
+
 puts "Getting users list... "
-users = Hash[client.users_list["members"].map{|m| [m["id"], m["name"]]}]
-puts "Getting last messages... "
+users = load_users_hash(client)
 
 puts "Getting messages for #{channel}"
 
-channels = client.channels_list["channels"]
-channels.each do |c|
-  next if c['name'] != channel
-  response = client.channels_history(channel: c['id'], count: 1000)
-  messages = response["messages"]
-  messages.reverse.each do |msg|
-    user_name = users[msg["user"]]
-    text = msg["text"].inspect
-    text = format_text(users, text)
-    timestamp = Time.at msg['ts'].to_f
-    puts "#{timestamp.strftime("%Y-%m-%d %H:%M")} - @#{user_name}: #{text}"
-  end
-end
+tail_channel(client, users, channel)
 
 puts "Done!"
